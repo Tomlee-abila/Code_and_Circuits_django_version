@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ course.title }} — Code & Circuits{% endblock %}
+{% block meta_description %}{{ course.short_description|default:course.description|truncatechars:160 }}{% endblock %}
+
+{% block content %}
+<!-- Course Hero -->
+<div class="course-hero">
+  <div class="container course-hero__inner">
+    <div class="course-hero__content">
+      <div class="breadcrumb">
+        <a href="{% url 'courses:list' %}">Courses</a>
+        <i data-lucide="chevron-right"></i>
+        {% if course.category %}<a href="{{ course.category.get_absolute_url }}">{{ course.category.name }}</a><i data-lucide="chevron-right"></i>{% endif %}
+        <span>{{ course.title|truncatechars:30 }}</span>
+      </div>
+
+      {% if course.category %}<span class="course-card__cat">{{ course.category.name }}</span>{% endif %}
+      <h1 class="course-hero__title">{{ course.title }}</h1>
+      <p class="course-hero__desc">{{ course.short_description|default:course.description|truncatechars:200 }}</p>
+
+      <div class="course-hero__meta">
+        <span class="badge badge--{{ course.level }}">{{ course.get_level_display }}</span>
+        <span class="course-meta-item"><i data-lucide="users"></i> {{ course.enrollment_count }} students</span>
+        <span class="course-meta-item"><i data-lucide="star"></i> {{ course.average_rating }}/5</span>
+        <span class="course-meta-item"><i data-lucide="clock"></i> {{ course.duration_hours }} hours</span>
+        <span class="course-meta-item"><i data-lucide="book-open"></i> {{ course.lesson_count }} lessons</span>
+      </div>
+
+      <div class="course-instructor-info">
+        <div class="instructor-avatar">{{ course.instructor.first_name.0|default:course.instructor.username.0|upper }}</div>
+        <div>
+          <span class="instructor-label">INSTRUCTOR</span>
+          <strong class="instructor-name">{{ course.instructor.get_full_name|default:course.instructor.username }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="course-hero__card">
+      {% if course.thumbnail %}
+        <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" class="course-hero__thumb" />
+      {% else %}
+        <div class="course-hero__thumb-placeholder">
+          <i data-lucide="{% if course.category %}{{ course.category.icon }}{% else %}book-open{% endif %}"></i>
+        </div>
+      {% endif %}
+
+      <div class="course-enroll-card">
+        <div class="enroll-price">
+          {% if course.is_free %}
+            <span class="price-free">Free</span>
+          {% else %}
+            <span class="price-amount">${{ course.price }}</span>
+          {% endif %}
+        </div>
+
+        {% if is_enrolled %}
+          <a href="{% url 'courses:inner_dashboard' slug=course.slug %}" class="btn btn-primary btn--lg" style="width:100%;">
+            <i data-lucide="play-circle"></i> Continue Learning
+          </a>
+          {% if enrollment %}
+          <div class="enroll-progress">
+            <div class="progress-bar-wrap">
+              <div class="progress-bar" style="width:{{ enrollment.progress_percent }}%"></div>
+            </div>
+            <span class="progress-label">{{ enrollment.progress_percent }}% complete</span>
+          </div>
+          {% endif %}
+        {% elif user.is_authenticated %}
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="enroll" class="btn btn-primary btn--lg" style="width:100%;">
+              <i data-lucide="zap"></i> Enroll Now
+            </button>
+          </form>
+        {% else %}
+          <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary btn--lg" style="width:100%;">
+            <i data-lucide="log-in"></i> Login to Enroll
+          </a>
+        {% endif %}
+
+        <ul class="course-includes">
+          <li><i data-lucide="video"></i> {{ course.lesson_count }} video lessons</li>
+          <li><i data-lucide="clock"></i> {{ course.duration_hours }} hours of content</li>
+          <li><i data-lucide="download"></i> Downloadable resources</li>
+          <li><i data-lucide="award"></i> Certificate of completion</li>
+          <li><i data-lucide="infinity"></i> Lifetime access</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Course Body -->
+<div class="container course-body">
+
+  <!-- Video Preview -->
+  {% if course.intro_video_url %}
+  <section class="course-section">
+    <h2 class="course-section__title">Course Preview</h2>
+    <div class="video-wrap">
+      <iframe src="{{ course.intro_video_url }}" frameborder="0" allowfullscreen loading="lazy" class="video-player"></iframe>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Lessons List -->
+  <section class="course-section">
+    <h2 class="course-section__title">
+      Curriculum <span class="lesson-count-badge">{{ course.lesson_count }} lessons</span>
+    </h2>
+    <div class="lessons-list">
+      {% for lesson in lessons %}
+      <div class="lesson-row">
+        <div class="lesson-row__left">
+          <span class="lesson-num">{{ lesson.order }}</span>
+          <div>
+            <span class="lesson-title">{{ lesson.title }}</span>
+            {% if lesson.duration_minutes %}
+            <span class="lesson-duration">{{ lesson.duration_minutes }} min</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="lesson-row__right">
+          {% if lesson.is_preview %}
+            <span class="badge badge--preview">Preview</span>
+          {% endif %}
+          {% if is_enrolled %}
+            <a href="{% url 'courses:inner_dashboard' slug=course.slug %}?lesson={{ lesson.pk }}" class="btn btn-ghost btn--sm">
+              <i data-lucide="play"></i> Start
+            </a>
+          {% else %}
+            <i data-lucide="{% if lesson.is_preview %}play-circle{% else %}lock{% endif %}" class="lesson-lock"></i>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <p class="empty-message">Lessons coming soon.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Reviews -->
+  <section class="course-section">
+    <h2 class="course-section__title">
+      Reviews
+      {% if course.average_rating %}
+        <span class="avg-rating"><i data-lucide="star"></i> {{ course.average_rating }}</span>
+      {% endif %}
+    </h2>
+
+    {% if review_form %}
+    <div class="review-form-wrap">
+      <h3 class="review-form-title">Leave a Review</h3>
+      <form method="post" class="review-form">
+        {% csrf_token %}
+        <div class="star-rating-input">
+          {% for i in "54321" %}
+          <label class="star-label" for="star-{{ i }}">
+            <input type="radio" name="rating" value="{{ i }}" id="star-{{ i }}" class="star-radio" />
+            <i data-lucide="star" class="star-icon"></i>
+          </label>
+          {% endfor %}
+        </div>
+        <textarea name="comment" placeholder="Share your experience…" class="cc-input" rows="4" required></textarea>
+        <button type="submit" name="review" class="btn btn-primary">Submit Review</button>
+      </form>
+    </div>
+    {% endif %}
+
+    <div class="reviews-list">
+      {% for review in reviews %}
+      <div class="review-card">
+        <div class="review-header">
+          <div class="reviewer-avatar">{{ review.user.first_name.0|default:review.user.username.0|upper }}</div>
+          <div>
+            <strong class="reviewer-name">{{ review.user.get_full_name|default:review.user.username }}</strong>
+            <div class="review-stars">
+              {% for i in "12345" %}
+              <i data-lucide="star" class="star {% if forloop.counter <= review.rating %}star--filled{% endif %}"></i>
+              {% endfor %}
+            </div>
+          </div>
+          <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
+        </div>
+        <p class="review-comment">{{ review.comment }}</p>
+      </div>
+      {% empty %}
+      <p class="empty-message">No reviews yet. Be the first!</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Related Courses -->
+  {% if related_courses %}
+  <section class="course-section">
+    <h2 class="course-section__title">Related Courses</h2>
+    <div class="courses-grid courses-grid--sm">
+      {% for rc in related_courses %}
+      <article class="course-card">
+        <a href="{{ rc.get_absolute_url }}" class="course-card__img-wrap">
+          {% if rc.thumbnail %}
+            <img src="{{ rc.thumbnail.url }}" alt="{{ rc.title }}" class="course-card__img" loading="lazy" />
+          {% else %}
+            <div class="course-card__img-placeholder"><i data-lucide="book-open"></i></div>
+          {% endif %}
+        </a>
+        <div class="course-card__body">
+          <h3 class="course-card__title"><a href="{{ rc.get_absolute_url }}">{{ rc.title }}</a></h3>
+          <div class="course-card__footer">
+            <span class="course-price">{% if rc.is_free %}Free{% else %}${{ rc.price }}{% endif %}</span>
+            <a href="{{ rc.get_absolute_url }}" class="btn btn-ghost btn--sm">View</a>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}
