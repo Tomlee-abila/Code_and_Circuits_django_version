@@ -41,3 +41,4 @@ dist/
 # Arduino (optional)
 *.hex
 *.bin
+.claude/
