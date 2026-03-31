@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Quiz Result — Code & Circuits{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:720px;padding:3rem 1rem;">
+  <div class="quiz-result-card">
+    <div class="quiz-result-icon {% if attempt.passed %}quiz-result-icon--pass{% else %}quiz-result-icon--fail{% endif %}">
+      <i data-lucide="{% if attempt.passed %}check-circle{% else %}x-circle{% endif %}"></i>
+    </div>
+    <h1 class="quiz-result-title">{% if attempt.passed %}Quiz Passed!{% else %}Try Again{% endif %}</h1>
+    <div class="quiz-result-score">
+      <span class="quiz-score-num">{{ attempt.score }}%</span>
+      <span class="quiz-score-label">Score · Pass mark: {{ attempt.quiz.passing_score }}%</span>
+    </div>
+    {% if attempt.passed %}
+    <p class="quiz-result-msg">Excellent work! You passed the quiz. Continue to the next lesson.</p>
+    {% else %}
+    <p class="quiz-result-msg">You need {{ attempt.quiz.passing_score }}% to pass. Review the lesson and try again.</p>
+    {% endif %}
+
+    <div class="quiz-result-actions">
+      {% if not attempt.passed %}
+      <a href="{% url 'quizzes:take_quiz' lesson_id=attempt.quiz.lesson.pk %}" class="btn btn-primary">
+        <i data-lucide="refresh-cw"></i> Retry Quiz
+      </a>
+      {% endif %}
+      <a href="{% url 'courses:inner_dashboard' slug=attempt.quiz.lesson.course.slug %}?lesson={{ attempt.quiz.lesson.pk }}" class="btn btn-ghost">
+        <i data-lucide="arrow-left"></i> Back to Lesson
+      </a>
+    </div>
+  </div>
+
+  <!-- Question Review -->
+  <div class="quiz-review">
+    <h2 class="quiz-review-title">Review Answers</h2>
+    {% for question in questions %}
+    <div class="quiz-review-q {% if attempt.answers|get_item:question.pk|stringformat:'s' %}{% endif %}">
+      <p class="quiz-q-text"><strong>Q{{ forloop.counter }}:</strong> {{ question.text }}</p>
+      <div class="quiz-choices quiz-choices--review">
+        {% for choice in question.choices.all %}
+        <div class="quiz-choice-review
+          {% if choice.is_correct %}quiz-choice-review--correct
+          {% elif attempt.answers|get_item:question.pk|stringformat:'s' == choice.pk|stringformat:'s' %}quiz-choice-review--wrong
+          {% endif %}">
+          <i data-lucide="{% if choice.is_correct %}check{% elif attempt.answers|get_item:question.pk|stringformat:'s' == choice.pk|stringformat:'s' %}x{% else %}circle{% endif %}"></i>
+          {{ choice.text }}
+        </div>
+        {% endfor %}
+      </div>
+      {% if question.explanation %}
+      <div class="quiz-explanation">
+        <i data-lucide="info"></i> {{ question.explanation }}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
