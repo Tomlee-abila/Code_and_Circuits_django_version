@@ -1,0 +1,244 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Code & Circuits{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}STEM-focused learning platform for IoT, Arduino, AI, and programming.{% endblock %}" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-inner">
+      <a href="{% url 'core:home' %}" class="nav-logo">
+        <span class="logo-circuit">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect x="2" y="2" width="8" height="8" rx="1" stroke="#ffe483" stroke-width="1.5"/>
+            <rect x="18" y="2" width="8" height="8" rx="1" stroke="#ffe483" stroke-width="1.5"/>
+            <rect x="10" y="18" width="8" height="8" rx="1" stroke="#ffe483" stroke-width="1.5"/>
+            <line x1="6" y1="10" x2="6" y2="14" stroke="#ffe483" stroke-width="1.5"/>
+            <line x1="6" y1="14" x2="22" y2="14" stroke="#ffe483" stroke-width="1.5"/>
+            <line x1="22" y1="10" x2="22" y2="14" stroke="#ffe483" stroke-width="1.5"/>
+            <line x1="14" y1="14" x2="14" y2="18" stroke="#ffe483" stroke-width="1.5"/>
+            <circle cx="6" cy="14" r="1.5" fill="#ffe483"/>
+            <circle cx="22" cy="14" r="1.5" fill="#ffe483"/>
+            <circle cx="14" cy="14" r="1.5" fill="#ffe483"/>
+          </svg>
+        </span>
+        <span class="logo-text">Code <span class="logo-amp">&</span> Circuits</span>
+      </a>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="{% url 'core:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li>
+        <li><a href="{% url 'courses:list' %}" class="nav-link {% if 'courses' in request.path %}active{% endif %}">Courses</a></li>
+        <li><a href="{% url 'events:list' %}" class="nav-link {% if 'events' in request.path %}active{% endif %}">Events</a></li>
+        <li><a href="{% url 'core:about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        {% if user.is_authenticated %}
+          <div class="nav-user-menu" id="userMenu">
+            <button class="nav-avatar-btn" id="userMenuBtn" aria-expanded="false">
+              {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" alt="{{ user.profile.display_name }}" class="nav-avatar-img" />
+              {% else %}
+                <div class="nav-avatar-placeholder">{{ user.first_name.0|default:user.username.0|upper }}</div>
+              {% endif %}
+              <span class="nav-username">{{ user.profile.display_name|truncatechars:15 }}</span>
+              <i data-lucide="chevron-down" class="nav-chevron"></i>
+            </button>
+            <div class="nav-dropdown" id="userDropdown">
+              <a href="{% url 'accounts:dashboard' %}" class="dropdown-item">
+                <i data-lucide="layout-dashboard"></i> Dashboard
+              </a>
+              <a href="{% url 'accounts:profile' %}" class="dropdown-item">
+                <i data-lucide="user"></i> Profile
+              </a>
+              {% if user.profile.is_trainer %}
+              <a href="{% url 'accounts:trainer_dashboard' %}" class="dropdown-item">
+                <i data-lucide="presentation"></i> Trainer Panel
+              </a>
+              {% endif %}
+              {% if user.is_staff %}
+              <a href="{% url 'accounts:admin_dashboard' %}" class="dropdown-item">
+                <i data-lucide="shield"></i> Admin Panel
+              </a>
+              {% endif %}
+              <div class="dropdown-divider"></div>
+              <a href="{% url 'accounts:logout' %}" class="dropdown-item dropdown-item--danger">
+                <i data-lucide="log-out"></i> Logout
+              </a>
+            </div>
+          </div>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="btn btn-ghost">Login</a>
+          <a href="{% url 'accounts:signup' %}" class="btn btn-primary">Get Started</a>
+        {% endif %}
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══ MESSAGES ═══ -->
+  {% if messages %}
+  <div class="messages-container">
+    {% for message in messages %}
+    <div class="message message--{{ message.tags }}" role="alert">
+      <span>{{ message }}</span>
+      <button class="message-close" onclick="this.parentElement.remove()" aria-label="Dismiss">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <main id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="{% url 'core:home' %}" class="nav-logo" style="margin-bottom:1rem;display:inline-flex;">
+            <span class="logo-circuit">
+              <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+                <rect x="2" y="2" width="8" height="8" rx="1" stroke="#ffe483" stroke-width="1.5"/>
+                <rect x="18" y="2" width="8" height="8" rx="1" stroke="#ffe483" stroke-width="1.5"/>
+                <rect x="10" y="18" width="8" height="8" rx="1" stroke="#ffe483" stroke-width="1.5"/>
+                <line x1="6" y1="10" x2="6" y2="14" stroke="#ffe483" stroke-width="1.5"/>
+                <line x1="6" y1="14" x2="22" y2="14" stroke="#ffe483" stroke-width="1.5"/>
+                <line x1="22" y1="10" x2="22" y2="14" stroke="#ffe483" stroke-width="1.5"/>
+                <line x1="14" y1="14" x2="14" y2="18" stroke="#ffe483" stroke-width="1.5"/>
+                <circle cx="6" cy="14" r="1.5" fill="#ffe483"/>
+                <circle cx="22" cy="14" r="1.5" fill="#ffe483"/>
+                <circle cx="14" cy="14" r="1.5" fill="#ffe483"/>
+              </svg>
+            </span>
+            <span class="logo-text">Code & Circuits</span>
+          </a>
+          <p class="footer-tagline">Empowering the next generation of engineers and developers through practical STEM education.</p>
+          <div class="footer-socials">
+            <a href="#" class="social-link" aria-label="Twitter"><i data-lucide="twitter"></i></a>
+            <a href="#" class="social-link" aria-label="GitHub"><i data-lucide="github"></i></a>
+            <a href="#" class="social-link" aria-label="LinkedIn"><i data-lucide="linkedin"></i></a>
+            <a href="#" class="social-link" aria-label="YouTube"><i data-lucide="youtube"></i></a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Learn</h4>
+          <ul class="footer-links">
+            <li><a href="{% url 'courses:list' %}">All Courses</a></li>
+            <li><a href="{% url 'courses:list' %}?category=iot">IoT & Arduino</a></li>
+            <li><a href="{% url 'courses:list' %}?category=ai">AI & Machine Learning</a></li>
+            <li><a href="{% url 'courses:list' %}?category=programming">Programming</a></li>
+            <li><a href="{% url 'events:list' %}">Events & Workshops</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Platform</h4>
+          <ul class="footer-links">
+            <li><a href="{% url 'core:about' %}">About Us</a></li>
+            <li><a href="{% url 'accounts:signup' %}">Join as Student</a></li>
+            <li><a href="{% url 'accounts:signup' %}">Teach on C&C</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Contact</h4>
+          <ul class="footer-links">
+            <li class="footer-contact-item">
+              <i data-lucide="mail"></i>
+              <span>hello@codecircuits.io</span>
+            </li>
+            <li class="footer-contact-item">
+              <i data-lucide="map-pin"></i>
+              <span>Lagos, Nigeria · Remote-first</span>
+            </li>
+          </ul>
+          <div class="footer-newsletter">
+            <p class="footer-newsletter-label">Stay in the loop</p>
+            <form class="newsletter-form">
+              <input type="email" placeholder="your@email.com" class="cc-input newsletter-input" />
+              <button type="submit" class="btn btn-primary btn--sm">Subscribe</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copy">&copy; {% now "Y" %} Code & Circuits. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══ SCRIPTS ═══ -->
+  <script>
+    lucide.createIcons();
+
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // Mobile hamburger
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    hamburger?.addEventListener('click', () => {
+      hamburger.classList.toggle('open');
+      navLinks.classList.toggle('open');
+    });
+
+    // User dropdown
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    userMenuBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const expanded = userMenuBtn.getAttribute('aria-expanded') === 'true';
+      userMenuBtn.setAttribute('aria-expanded', !expanded);
+      userDropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => {
+      userDropdown?.classList.remove('open');
+      userMenuBtn?.setAttribute('aria-expanded', 'false');
+    });
+
+    // Auto-dismiss messages
+    setTimeout(() => {
+      document.querySelectorAll('.message').forEach(el => el.remove());
+    }, 5000);
+  </script>
+
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
