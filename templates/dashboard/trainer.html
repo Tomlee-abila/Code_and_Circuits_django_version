@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Trainer Dashboard — Code & Circuits{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+  <aside class="dash-sidebar">
+    <div class="dash-user">
+      <div class="dash-avatar-placeholder">{{ user.first_name.0|default:user.username.0|upper }}</div>
+      <div>
+        <strong class="dash-username">{{ user.profile.display_name }}</strong>
+        <span class="dash-role badge badge--trainer">Trainer</span>
+      </div>
+    </div>
+    <nav class="dash-nav">
+      <a href="{% url 'accounts:dashboard' %}" class="dash-nav-link"><i data-lucide="layout-dashboard"></i> Student Dashboard</a>
+      <a href="{% url 'accounts:trainer_dashboard' %}" class="dash-nav-link active"><i data-lucide="presentation"></i> Trainer Panel</a>
+      <a href="{% url 'courses:create_course' %}" class="dash-nav-link"><i data-lucide="plus-circle"></i> New Course</a>
+      <a href="{% url 'accounts:profile' %}" class="dash-nav-link"><i data-lucide="settings"></i> Settings</a>
+      <div class="dash-nav-divider"></div>
+      <a href="{% url 'accounts:logout' %}" class="dash-nav-link dash-nav-link--danger"><i data-lucide="log-out"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <div class="dash-main">
+    <div class="dash-welcome">
+      <div class="dash-welcome__text">
+        <h1 class="dash-welcome__title">Trainer Dashboard</h1>
+        <p class="dash-welcome__sub">Manage your courses and track student progress.</p>
+      </div>
+      <a href="{% url 'courses:create_course' %}" class="btn btn-primary">
+        <i data-lucide="plus"></i> New Course
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="dash-stats">
+      <div class="dash-stat-card">
+        <i data-lucide="book-open" class="dash-stat-icon"></i>
+        <div>
+          <span class="dash-stat-num">{{ courses.count }}</span>
+          <span class="dash-stat-label">My Courses</span>
+        </div>
+      </div>
+      <div class="dash-stat-card">
+        <i data-lucide="users" class="dash-stat-icon"></i>
+        <div>
+          <span class="dash-stat-num">{{ total_students }}</span>
+          <span class="dash-stat-label">Total Students</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Courses Table -->
+    <div class="dash-section">
+      <h2 class="dash-section-title"><i data-lucide="book-open"></i> My Courses</h2>
+      {% if courses %}
+      <div class="trainer-table-wrap">
+        <table class="trainer-table">
+          <thead>
+            <tr>
+              <th>Course</th>
+              <th>Status</th>
+              <th>Students</th>
+              <th>Rating</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for course in courses %}
+            <tr>
+              <td>
+                <div class="trainer-course-cell">
+                  <strong>{{ course.title }}</strong>
+                  <span class="badge badge--{{ course.level }}">{{ course.get_level_display }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge {% if course.is_published %}badge--success{% else %}badge--warning{% endif %}">
+                  {% if course.is_published %}Published{% else %}Draft{% endif %}
+                </span>
+              </td>
+              <td>{{ course.enrollment_count }}</td>
+              <td>
+                {% if course.average_rating %}
+                  <span><i data-lucide="star" style="width:14px;height:14px;color:#ffe483;"></i> {{ course.average_rating }}</span>
+                {% else %}—{% endif %}
+              </td>
+              <td class="trainer-actions">
+                <a href="{{ course.get_absolute_url }}" class="btn btn-ghost btn--sm"><i data-lucide="eye"></i></a>
+                <a href="{% url 'courses:edit_course' slug=course.slug %}" class="btn btn-ghost btn--sm"><i data-lucide="edit"></i></a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i data-lucide="book-plus"></i>
+        <h3>No courses yet</h3>
+        <p><a href="{% url 'courses:create_course' %}">Create your first course</a> to get started.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
