@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ course.title }} — Learn — Code & Circuits{% endblock %}
+
+{% block content %}
+<div class="learn-layout">
+
+  <!-- Sidebar -->
+  <aside class="learn-sidebar">
+    <div class="learn-sidebar__header">
+      <a href="{{ course.get_absolute_url }}" class="learn-back">
+        <i data-lucide="arrow-left"></i> Course Overview
+      </a>
+      <h2 class="learn-course-title">{{ course.title }}</h2>
+      <div class="learn-progress-wrap">
+        <div class="learn-progress-bar">
+          <div class="learn-progress-fill" style="width:{{ progress }}%"></div>
+        </div>
+        <span class="learn-progress-label">{{ progress }}% complete</span>
+      </div>
+    </div>
+
+    <nav class="lessons-nav">
+      <h3 class="lessons-nav__heading">MODULES</h3>
+      <ul class="lessons-nav__list">
+        {% for lesson in lessons %}
+        <li class="lessons-nav__item {% if current_lesson.pk == lesson.pk %}lessons-nav__item--active{% endif %}">
+          <a href="?lesson={{ lesson.pk }}" class="lessons-nav__link">
+            <div class="lesson-nav-status">
+              {% if lesson.pk in completed_lesson_ids %}
+                <span class="lesson-check lesson-check--done"><i data-lucide="check"></i></span>
+              {% elif current_lesson.pk == lesson.pk %}
+                <span class="lesson-check lesson-check--active"><i data-lucide="play"></i></span>
+              {% else %}
+                <span class="lesson-check"><span class="lesson-num-sm">{{ lesson.order }}</span></span>
+              {% endif %}
+            </div>
+            <div class="lesson-nav-info">
+              <span class="lesson-nav-title">{{ lesson.title }}</span>
+              {% if lesson.duration_minutes %}
+              <span class="lesson-nav-dur">{{ lesson.duration_minutes }} min</span>
+              {% endif %}
+            </div>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="learn-main">
+    {% if current_lesson %}
+    <!-- Tabs -->
+    <div class="learn-tabs" role="tablist">
+      <button class="learn-tab active" data-tab="lesson" role="tab" aria-selected="true">
+        <i data-lucide="play-circle"></i> Lesson
+      </button>
+      <button class="learn-tab" data-tab="resources" role="tab">
+        <i data-lucide="file-text"></i> Resources
+      </button>
+      <button class="learn-tab" data-tab="discussion" role="tab">
+        <i data-lucide="message-circle"></i> Discussion
+      </button>
+      {% if current_lesson.quiz %}
+      <button class="learn-tab" data-tab="quiz" role="tab">
+        <i data-lucide="clipboard-check"></i> Quiz
+      </button>
+      {% endif %}
+    </div>
+
+    <!-- Lesson Tab -->
+    <div class="learn-panel" id="tab-lesson">
+      <div class="learn-lesson-header">
+        <div>
+          <span class="lesson-module-label">MODULE {{ current_lesson.order }}</span>
+          <h1 class="learn-lesson-title">{{ current_lesson.title }}</h1>
+        </div>
+        <form method="post" style="flex-shrink:0;">
+          {% csrf_token %}
+          {% if current_lesson.pk in completed_lesson_ids %}
+            <span class="btn btn-ghost btn--sm lesson-done-badge">
+              <i data-lucide="check-circle"></i> Completed
+            </span>
+          {% else %}
+            <button type="submit" name="mark_complete" value="{{ current_lesson.pk }}" class="btn btn-primary btn--sm">
+              <i data-lucide="check"></i> Mark Complete
+            </button>
+          {% endif %}
+        </form>
+      </div>
+
+      {% if current_lesson.video_url %}
+      <div class="video-wrap">
+        <iframe src="{{ current_lesson.get_embed_url }}" frameborder="0" allowfullscreen loading="lazy" class="video-player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+      </div>
+      {% endif %}
+
+      {% if current_lesson.content %}
+      <div class="lesson-content prose">
+        {{ current_lesson.content|linebreaks }}
+      </div>
+      {% endif %}
+
+      <!-- Lesson Navigation -->
+      <div class="lesson-nav-footer">
+        {% for lesson in lessons %}
+          {% if lesson.pk == current_lesson.pk %}
+            {% if not forloop.first %}
+            {% with lessons|dictsort:"order" as sorted_lessons %}
+            {% endwith %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {% with current_lesson.order as cur_order %}
+        {% for lesson in lessons %}
+          {% if lesson.order == cur_order|add:"-1" %}
+          <a href="?lesson={{ lesson.pk }}" class="btn btn-ghost btn--sm">
+            <i data-lucide="chevron-left"></i> Previous
+          </a>
+          {% endif %}
+        {% endfor %}
+        <span></span>
+        {% for lesson in lessons %}
+          {% if lesson.order == cur_order|add:"1" %}
+          <a href="?lesson={{ lesson.pk }}" class="btn btn-primary btn--sm">
+            Next <i data-lucide="chevron-right"></i>
+          </a>
+          {% endif %}
+        {% endfor %}
+        {% endwith %}
+      </div>
+    </div>
+
+    <!-- Resources Tab -->
+    <div class="learn-panel hidden" id="tab-resources">
+      <h2 class="learn-panel-title">Downloadable Resources</h2>
+      <div class="resources-list">
+        {% for resource in current_lesson.resources.all %}
+        <a href="{{ resource.file.url }}" class="resource-item" download>
+          <i data-lucide="file-down"></i>
+          <span>{{ resource.title }}</span>
+          <i data-lucide="download" class="resource-dl-icon"></i>
+        </a>
+        {% empty %}
+        <div class="empty-state">
+          <i data-lucide="folder-open"></i>
+          <p>No resources for this lesson.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Discussion Tab -->
+    <div class="learn-panel hidden" id="tab-discussion">
+      <h2 class="learn-panel-title">Lesson Discussion</h2>
+      <div class="discussion-placeholder">
+        <i data-lucide="message-circle"></i>
+        <p>Discussion threads coming soon. Ask questions in our community.</p>
+      </div>
+    </div>
+
+    <!-- Quiz Tab -->
+    {% if current_lesson.quiz %}
+    <div class="learn-panel hidden" id="tab-quiz">
+      <h2 class="learn-panel-title">{{ current_lesson.quiz.title }}</h2>
+      <div class="quiz-cta">
+        <p>{{ current_lesson.quiz.question_count }} question{{ current_lesson.quiz.question_count|pluralize }} · Pass mark: {{ current_lesson.quiz.passing_score }}%</p>
+        <a href="{% url 'quizzes:take_quiz' lesson_id=current_lesson.pk %}" class="btn btn-primary">
+          <i data-lucide="clipboard-check"></i> Start Quiz
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state" style="height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <i data-lucide="play-circle"></i>
+      <h2>No lessons available yet.</h2>
+      <p>Check back soon!</p>
+    </div>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Tab switching
+  const tabs = document.querySelectorAll('.learn-tab');
+  const panels = document.querySelectorAll('.learn-panel');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tab;
+      tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+      panels.forEach(p => p.classList.add('hidden'));
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      document.getElementById(`tab-${target}`).classList.remove('hidden');
+    });
+  });
+</script>
+{% endblock %}
