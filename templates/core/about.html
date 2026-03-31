@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block title %}About — Code & Circuits{% endblock %}
+
+{% block content %}
+<!-- Mission Hero -->
+<section class="page-header page-header--tall">
+  <div class="page-header__glow"></div>
+  <div class="container">
+    <span class="section-label">OUR STORY</span>
+    <h1 class="page-title">We Build Builders.</h1>
+    <p class="page-subtitle" style="max-width:600px;margin:1.5rem auto 0;">
+      Code & Circuits was founded on a single belief: that the gap between understanding technology and building with it should not exist. We bridge theory and practice through radical hands-on education.
+    </p>
+  </div>
+</section>
+
+<!-- Mission -->
+<section class="section">
+  <div class="container">
+    <div class="about-mission-grid">
+      <div class="about-mission-text">
+        <span class="section-label">MISSION</span>
+        <h2 class="section-title" style="text-align:left;">Democratising STEM Education</h2>
+        <p>The world's most important technologies — IoT, artificial intelligence, robotics — are built by engineers. Yet access to quality, practical engineering education remains unequal. We are changing that.</p>
+        <p>Code & Circuits is a remote-first platform that delivers university-grade STEM education at a fraction of the cost, with the practical depth that traditional institutions often miss.</p>
+        <div class="about-stats">
+          <div class="about-stat"><span class="about-stat-num">10k+</span><span>Students</span></div>
+          <div class="about-stat"><span class="about-stat-num">150+</span><span>Courses</span></div>
+          <div class="about-stat"><span class="about-stat-num">50+</span><span>Instructors</span></div>
+          <div class="about-stat"><span class="about-stat-num">30+</span><span>Countries</span></div>
+        </div>
+      </div>
+      <div class="about-mission-visual" aria-hidden="true">
+        <div class="about-circuit-art">
+          <svg viewBox="0 0 300 300" fill="none">
+            <rect width="300" height="300" fill="#0e0e0e"/>
+            <!-- Grid -->
+            <line x1="60" y1="0" x2="60" y2="300" stroke="#ffe483" stroke-width=".5" opacity="0.1"/>
+            <line x1="150" y1="0" x2="150" y2="300" stroke="#ffe483" stroke-width=".5" opacity="0.1"/>
+            <line x1="240" y1="0" x2="240" y2="300" stroke="#ffe483" stroke-width=".5" opacity="0.1"/>
+            <line x1="0" y1="60" x2="300" y2="60" stroke="#ffe483" stroke-width=".5" opacity="0.1"/>
+            <line x1="0" y1="150" x2="300" y2="150" stroke="#ffe483" stroke-width=".5" opacity="0.1"/>
+            <line x1="0" y1="240" x2="300" y2="240" stroke="#ffe483" stroke-width=".5" opacity="0.1"/>
+            <!-- Traces -->
+            <path d="M60 60 H150 V150 H240" stroke="#ffe483" stroke-width="2" opacity="0.5"/>
+            <path d="M60 240 H150 V150" stroke="#ffe483" stroke-width="2" opacity="0.4"/>
+            <path d="M240 60 V150" stroke="#ffe483" stroke-width="2" opacity="0.4"/>
+            <!-- Animated trace -->
+            <path d="M60 60 V240" stroke="#ffe483" stroke-width="1.5" opacity="0.7" stroke-dasharray="8 4" class="trace-animate"/>
+            <!-- Components -->
+            <rect x="110" y="120" width="80" height="60" rx="3" fill="#131313" stroke="#ffe483" stroke-width="1.5" opacity="0.7"/>
+            <text x="150" y="148" text-anchor="middle" fill="#ffe483" font-family="JetBrains Mono" font-size="9" opacity="0.8">C&C</text>
+            <text x="150" y="163" text-anchor="middle" fill="#ffe483" font-family="JetBrains Mono" font-size="7" opacity="0.5">CORE</text>
+            <!-- Vias -->
+            <circle cx="60" cy="60" r="6" fill="#ffe483" opacity="0.8"/>
+            <circle cx="150" cy="60" r="4" fill="#ffe483" opacity="0.5"/>
+            <circle cx="240" cy="150" r="6" fill="#ffe483" opacity="0.9" class="pulse-svg"/>
+            <circle cx="150" cy="240" r="4" fill="#ffe483" opacity="0.5"/>
+            <circle cx="60" cy="240" r="6" fill="#ffe483" opacity="0.7" class="led-blink"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Values -->
+<section class="section section--alt">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">PRINCIPLES</span>
+      <h2 class="section-title">What We Stand For</h2>
+    </div>
+    <div class="values-grid">
+      <div class="value-card">
+        <div class="value-icon"><i data-lucide="wrench"></i></div>
+        <h3>Practical First</h3>
+        <p>Every lesson ends with something you can show — not a test, but a build.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon"><i data-lucide="globe"></i></div>
+        <h3>Globally Accessible</h3>
+        <p>Quality STEM education belongs to every engineer, everywhere — not just those near top universities.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon"><i data-lucide="users"></i></div>
+        <h3>Community-Driven</h3>
+        <p>Our learners teach each other. The best answers come from the people doing the work.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon"><i data-lucide="trending-up"></i></div>
+        <h3>Always Current</h3>
+        <p>Technology moves fast. Our curriculum is updated by practitioners, not just academics.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Team -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">THE TEAM</span>
+      <h2 class="section-title">Meet the Builders</h2>
+      <p class="section-subtitle">Engineers and educators who have been in the trenches.</p>
+    </div>
+    <div class="team-grid">
+      {% for member in team %}
+      <div class="team-card">
+        <div class="team-avatar">{{ member.name.0 }}</div>
+        <h3 class="team-name">{{ member.name }}</h3>
+        <span class="team-role">{{ member.role }}</span>
+        <p class="team-bio">{{ member.bio }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="section section--alt">
+  <div class="container">
+    <div class="contact-grid">
+      <div>
+        <span class="section-label">CONTACT</span>
+        <h2 class="section-title" style="text-align:left;">Get In Touch</h2>
+        <p>Whether you're a student with a question, an instructor wanting to teach, or a company looking to partner — we'd love to hear from you.</p>
+        <div class="contact-methods">
+          <a href="mailto:hello@codecircuits.io" class="contact-item">
+            <div class="contact-icon"><i data-lucide="mail"></i></div>
+            <div>
+              <span class="contact-label">Email</span>
+              <strong>hello@codecircuits.io</strong>
+            </div>
+          </a>
+          <div class="contact-item">
+            <div class="contact-icon"><i data-lucide="map-pin"></i></div>
+            <div>
+              <span class="contact-label">Headquarters</span>
+              <strong>Lagos, Nigeria · Remote-first</strong>
+            </div>
+          </div>
+        </div>
+        <div class="contact-socials">
+          <a href="#" class="social-link"><i data-lucide="twitter"></i></a>
+          <a href="#" class="social-link"><i data-lucide="github"></i></a>
+          <a href="#" class="social-link"><i data-lucide="linkedin"></i></a>
+          <a href="#" class="social-link"><i data-lucide="youtube"></i></a>
+        </div>
+      </div>
+
+      <div class="contact-cta-card">
+        <h3>Ready to join us?</h3>
+        <p>Start learning today — no credit card required.</p>
+        <a href="{% url 'accounts:signup' %}" class="btn btn-primary btn--lg">Create Free Account</a>
+        <a href="{% url 'courses:list' %}" class="btn btn-ghost" style="margin-top:.75rem;width:100%;">Browse Courses</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
