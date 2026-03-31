@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Courses — Code & Circuits{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <span class="section-label">CATALOG</span>
+    <h1 class="page-title">All Courses</h1>
+    <p class="page-subtitle">{{ total_count }} course{{ total_count|pluralize }} — practical skills, real projects.</p>
+  </div>
+</div>
+
+<div class="container courses-layout">
+  <!-- Sidebar Filters -->
+  <aside class="filters-sidebar">
+    <form method="get" id="filterForm">
+      <div class="filter-section">
+        <h3 class="filter-heading">Search</h3>
+        <div class="search-wrap">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" name="q" value="{{ q }}" placeholder="Search courses…" class="cc-input search-input" />
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <h3 class="filter-heading">Category</h3>
+        <ul class="filter-list">
+          <li>
+            <label class="filter-option {% if not selected_category %}filter-option--active{% endif %}">
+              <input type="radio" name="category" value="" {% if not selected_category %}checked{% endif %} onchange="this.form.submit()"/>
+              <span>All Categories</span>
+            </label>
+          </li>
+          {% for cat in categories %}
+          <li>
+            <label class="filter-option {% if selected_category == cat.slug %}filter-option--active{% endif %}">
+              <input type="radio" name="category" value="{{ cat.slug }}" {% if selected_category == cat.slug %}checked{% endif %} onchange="this.form.submit()"/>
+              <i data-lucide="{{ cat.icon }}"></i>
+              <span>{{ cat.name }}</span>
+              <span class="filter-count">{{ cat.courses.count }}</span>
+            </label>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="filter-section">
+        <h3 class="filter-heading">Difficulty</h3>
+        <ul class="filter-list">
+          {% for val, label in level_choices|default:"" %}
+          {% empty %}
+          {% for val, label in ""|make_list %}{% endfor %}
+          <li>
+            <label class="filter-option {% if selected_level == 'beginner' %}filter-option--active{% endif %}">
+              <input type="radio" name="level" value="beginner" {% if selected_level == 'beginner' %}checked{% endif %} onchange="this.form.submit()"/>
+              <span>Beginner</span>
+            </label>
+          </li>
+          <li>
+            <label class="filter-option {% if selected_level == 'intermediate' %}filter-option--active{% endif %}">
+              <input type="radio" name="level" value="intermediate" {% if selected_level == 'intermediate' %}checked{% endif %} onchange="this.form.submit()"/>
+              <span>Intermediate</span>
+            </label>
+          </li>
+          <li>
+            <label class="filter-option {% if selected_level == 'advanced' %}filter-option--active{% endif %}">
+              <input type="radio" name="level" value="advanced" {% if selected_level == 'advanced' %}checked{% endif %} onchange="this.form.submit()"/>
+              <span>Advanced</span>
+            </label>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="filter-section">
+        <h3 class="filter-heading">Price</h3>
+        <ul class="filter-list">
+          <li>
+            <label class="filter-option {% if not selected_price %}filter-option--active{% endif %}">
+              <input type="radio" name="price" value="" {% if not selected_price %}checked{% endif %} onchange="this.form.submit()"/>
+              <span>All</span>
+            </label>
+          </li>
+          <li>
+            <label class="filter-option {% if selected_price == 'free' %}filter-option--active{% endif %}">
+              <input type="radio" name="price" value="free" {% if selected_price == 'free' %}checked{% endif %} onchange="this.form.submit()"/>
+              <span>Free</span>
+            </label>
+          </li>
+          <li>
+            <label class="filter-option {% if selected_price == 'paid' %}filter-option--active{% endif %}">
+              <input type="radio" name="price" value="paid" {% if selected_price == 'paid' %}checked{% endif %} onchange="this.form.submit()"/>
+              <span>Paid</span>
+            </label>
+          </li>
+        </ul>
+      </div>
+
+      {% if q or selected_category or selected_level or selected_price %}
+      <a href="{% url 'courses:list' %}" class="btn btn-ghost btn--sm" style="width:100%;margin-top:.5rem;">
+        <i data-lucide="x"></i> Clear Filters
+      </a>
+      {% endif %}
+    </form>
+  </aside>
+
+  <!-- Course Grid -->
+  <div class="courses-main">
+    {% if q or selected_category or selected_level or selected_price %}
+    <div class="active-filters">
+      <span class="active-filters-label">Showing {{ total_count }} result{{ total_count|pluralize }}</span>
+      {% if q %}<span class="filter-tag">Query: "{{ q }}"</span>{% endif %}
+      {% if selected_category %}<span class="filter-tag">Category: {{ selected_category }}</span>{% endif %}
+      {% if selected_level %}<span class="filter-tag">Level: {{ selected_level }}</span>{% endif %}
+      {% if selected_price %}<span class="filter-tag">Price: {{ selected_price }}</span>{% endif %}
+    </div>
+    {% endif %}
+
+    <div class="courses-grid">
+      {% for course in courses %}
+      <article class="course-card">
+        <a href="{{ course.get_absolute_url }}" class="course-card__img-wrap">
+          {% if course.thumbnail %}
+            <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" class="course-card__img" loading="lazy" />
+          {% else %}
+            <div class="course-card__img-placeholder">
+              <i data-lucide="{% if course.category %}{{ course.category.icon }}{% else %}book-open{% endif %}"></i>
+            </div>
+          {% endif %}
+          <span class="course-card__level badge badge--{{ course.level }}">{{ course.get_level_display }}</span>
+        </a>
+        <div class="course-card__body">
+          {% if course.category %}<span class="course-card__cat">{{ course.category.name }}</span>{% endif %}
+          <h3 class="course-card__title">
+            <a href="{{ course.get_absolute_url }}">{{ course.title }}</a>
+          </h3>
+          <p class="course-card__desc">{{ course.short_description|default:course.description|truncatechars:90 }}</p>
+          <div class="course-card__meta">
+            <div class="course-instructor">
+              <div class="instructor-avatar-sm">{{ course.instructor.first_name.0|default:course.instructor.username.0|upper }}</div>
+              <span>{{ course.instructor.get_full_name|default:course.instructor.username }}</span>
+            </div>
+            <div class="course-stats">
+              <span class="course-stat"><i data-lucide="clock"></i> {{ course.duration_hours }}h</span>
+              <span class="course-stat"><i data-lucide="book-open"></i> {{ course.lesson_count }}</span>
+            </div>
+          </div>
+          <div class="course-card__footer">
+            <span class="course-price">{% if course.is_free %}Free{% else %}${{ course.price }}{% endif %}</span>
+            <a href="{{ course.get_absolute_url }}" class="btn btn-primary btn--sm">Enroll</a>
+          </div>
+        </div>
+      </article>
+      {% empty %}
+      <div class="empty-state" style="grid-column:1/-1">
+        <i data-lucide="search-x"></i>
+        <h3>No courses found</h3>
+        <p>Try adjusting your filters or <a href="{% url 'courses:list' %}">clear all</a>.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if courses.has_other_pages %}
+    <nav class="pagination" aria-label="Courses pagination">
+      {% if courses.has_previous %}
+        <a href="?page={{ courses.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="btn btn-ghost btn--sm">
+          <i data-lucide="chevron-left"></i> Prev
+        </a>
+      {% endif %}
+      <span class="pagination-info">Page {{ courses.number }} of {{ courses.paginator.num_pages }}</span>
+      {% if courses.has_next %}
+        <a href="?page={{ courses.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="btn btn-ghost btn--sm">
+          Next <i data-lucide="chevron-right"></i>
+        </a>
+      {% endif %}
+    </nav>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
