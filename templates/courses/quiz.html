@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}{{ quiz.title }} — Code & Circuits{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:720px;padding:3rem 1rem;">
+  <div class="breadcrumb">
+    <a href="{{ lesson.course.get_absolute_url }}">{{ lesson.course.title }}</a>
+    <i data-lucide="chevron-right"></i>
+    <a href="{% url 'courses:inner_dashboard' slug=lesson.course.slug %}?lesson={{ lesson.pk }}">{{ lesson.title }}</a>
+    <i data-lucide="chevron-right"></i>
+    <span>Quiz</span>
+  </div>
+
+  <div class="quiz-header">
+    <h1 class="quiz-title">{{ quiz.title }}</h1>
+    <div class="quiz-meta">
+      <span><i data-lucide="help-circle"></i> {{ quiz.question_count }} questions</span>
+      <span><i data-lucide="check-circle"></i> Pass: {{ quiz.passing_score }}%</span>
+      {% if quiz.time_limit_minutes %}
+      <span><i data-lucide="clock"></i> {{ quiz.time_limit_minutes }} min limit</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <form method="post" class="quiz-form">
+    {% csrf_token %}
+    {% for question in questions %}
+    <div class="quiz-question">
+      <div class="quiz-q-header">
+        <span class="quiz-q-num">Q{{ forloop.counter }}</span>
+        <p class="quiz-q-text">{{ question.text }}</p>
+      </div>
+      <div class="quiz-choices">
+        {% for choice in question.choices.all %}
+        <label class="quiz-choice">
+          <input type="radio" name="q_{{ question.pk }}" value="{{ choice.pk }}" class="quiz-radio" required />
+          <span class="quiz-choice-text">{{ choice.text }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="quiz-submit">
+      <button type="submit" class="btn btn-primary btn--lg">
+        <i data-lucide="send"></i> Submit Quiz
+      </button>
+      <a href="{% url 'courses:inner_dashboard' slug=lesson.course.slug %}?lesson={{ lesson.pk }}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
