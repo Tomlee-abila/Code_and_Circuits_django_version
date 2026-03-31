@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}{{ event.title }} — Code & Circuits{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:3rem;padding-bottom:4rem;">
+  <div class="event-detail-layout">
+    <div class="event-detail-main">
+      <div class="breadcrumb">
+        <a href="{% url 'events:list' %}">Events</a>
+        <i data-lucide="chevron-right"></i>
+        <span>{{ event.title|truncatechars:30 }}</span>
+      </div>
+
+      <div class="event-detail-tags">
+        <span class="badge {% if event.is_online %}badge--online{% else %}badge--physical{% endif %}">
+          <i data-lucide="{% if event.is_online %}wifi{% else %}map-pin{% endif %}"></i>
+          {% if event.is_online %}Online{% else %}In-Person{% endif %}
+        </span>
+        {% if event.is_free %}<span class="badge badge--free">Free</span>{% endif %}
+      </div>
+
+      {% if event.image %}
+      <img src="{{ event.image.url }}" alt="{{ event.title }}" class="event-detail-img" />
+      {% endif %}
+
+      <h1 class="event-detail-title">{{ event.title }}</h1>
+
+      <div class="event-detail-meta-row">
+        <span class="event-meta-lg"><i data-lucide="calendar"></i> {{ event.date|date:"l, F j, Y" }}</span>
+        <span class="event-meta-lg"><i data-lucide="clock"></i> {{ event.time|time:"g:i A" }}</span>
+        <span class="event-meta-lg"><i data-lucide="map-pin"></i> {{ event.location }}</span>
+        {% if not event.is_free %}
+        <span class="event-meta-lg"><i data-lucide="ticket"></i> ${{ event.price }}</span>
+        {% endif %}
+      </div>
+
+      <div class="event-detail-body prose">
+        {{ event.description|linebreaks }}
+      </div>
+
+      {% if event.organizer %}
+      <div class="event-organizer">
+        <div class="organizer-avatar">{{ event.organizer.first_name.0|default:event.organizer.username.0|upper }}</div>
+        <div>
+          <span class="organizer-label">ORGANIZER</span>
+          <strong class="organizer-name">{{ event.organizer.get_full_name|default:event.organizer.username }}</strong>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <aside class="event-detail-sidebar">
+      <div class="event-register-card">
+        <div class="event-register-price">
+          {% if event.is_free %}<span class="price-free">Free Event</span>
+          {% else %}<span class="price-amount">${{ event.price }}</span>{% endif %}
+        </div>
+
+        <div class="event-register-info">
+          <div class="event-info-row"><i data-lucide="calendar"></i> {{ event.date|date:"M d, Y" }}</div>
+          <div class="event-info-row"><i data-lucide="clock"></i> {{ event.time|time:"g:i A" }}</div>
+          <div class="event-info-row"><i data-lucide="map-pin"></i> {{ event.location }}</div>
+          <div class="event-info-row"><i data-lucide="users"></i> {{ event.registration_count }} / {{ event.capacity }} registered</div>
+          {% if event.spots_left > 0 %}
+          <div class="event-info-row event-info-row--accent">
+            <i data-lucide="ticket"></i> {{ event.spots_left }} spots remaining
+          </div>
+          {% else %}
+          <div class="event-info-row event-info-row--danger">
+            <i data-lucide="alert-circle"></i> Event is full
+          </div>
+          {% endif %}
+        </div>
+
+        {% if is_registered %}
+          <div class="register-success">
+            <i data-lucide="check-circle"></i>
+            <span>You're registered!</span>
+          </div>
+          {% if event.is_online and event.online_link %}
+          <a href="{{ event.online_link }}" class="btn btn-primary" target="_blank" rel="noopener">
+            <i data-lucide="video"></i> Join Online
+          </a>
+          {% endif %}
+        {% elif event.spots_left > 0 %}
+          {% if user.is_authenticated %}
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn--lg" style="width:100%;">
+              <i data-lucide="calendar-check"></i> Register Now
+            </button>
+          </form>
+          {% else %}
+          <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary btn--lg" style="width:100%;">
+            <i data-lucide="log-in"></i> Login to Register
+          </a>
+          {% endif %}
+        {% else %}
+          <button class="btn btn-ghost btn--lg" disabled style="width:100%;opacity:.5;">
+            Event Full
+          </button>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
