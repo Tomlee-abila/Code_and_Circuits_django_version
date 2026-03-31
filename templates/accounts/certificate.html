@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Certificate — {{ cert.course.title }} — Code & Circuits{% endblock %}
+
+{% block content %}
+<div class="container" style="padding:4rem 0;display:flex;flex-direction:column;align-items:center;">
+  <div class="certificate-card">
+    <div class="cert-border"></div>
+    <div class="cert-header">
+      <svg width="40" height="40" viewBox="0 0 28 28" fill="none">
+        <rect x="2" y="2" width="8" height="8" rx="1" stroke="#ffe483" stroke-width="1.5"/>
+        <rect x="18" y="2" width="8" height="8" rx="1" stroke="#ffe483" stroke-width="1.5"/>
+        <rect x="10" y="18" width="8" height="8" rx="1" stroke="#ffe483" stroke-width="1.5"/>
+        <line x1="6" y1="10" x2="6" y2="14" stroke="#ffe483" stroke-width="1.5"/>
+        <line x1="6" y1="14" x2="22" y2="14" stroke="#ffe483" stroke-width="1.5"/>
+        <line x1="22" y1="10" x2="22" y2="14" stroke="#ffe483" stroke-width="1.5"/>
+        <line x1="14" y1="14" x2="14" y2="18" stroke="#ffe483" stroke-width="1.5"/>
+      </svg>
+      <span class="cert-brand">Code & Circuits</span>
+    </div>
+    <p class="cert-label">CERTIFICATE OF COMPLETION</p>
+    <p class="cert-presented">This is to certify that</p>
+    <h2 class="cert-name">{{ cert.user.get_full_name|default:cert.user.username }}</h2>
+    <p class="cert-completed">has successfully completed</p>
+    <h3 class="cert-course">{{ cert.course.title }}</h3>
+    <div class="cert-meta">
+      <div class="cert-meta-item">
+        <span class="cert-meta-label">ISSUED</span>
+        <span class="cert-meta-val">{{ cert.issued_at|date:"F j, Y" }}</span>
+      </div>
+      <div class="cert-seal">
+        <i data-lucide="award"></i>
+      </div>
+      <div class="cert-meta-item">
+        <span class="cert-meta-label">CERTIFICATE ID</span>
+        <span class="cert-meta-val" style="font-family:'JetBrains Mono',monospace;font-size:.75rem;">{{ cert.id }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:2rem;display:flex;gap:1rem;">
+    <button onclick="window.print()" class="btn btn-primary"><i data-lucide="printer"></i> Print Certificate</button>
+    <a href="{% url 'accounts:dashboard' %}" class="btn btn-ghost"><i data-lucide="arrow-left"></i> Dashboard</a>
+  </div>
+</div>
+{% endblock %}
