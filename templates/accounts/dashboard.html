@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard — Code & Circuits{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <aside class="dash-sidebar">
+    <div class="dash-user">
+      {% if user.profile.avatar %}
+        <img src="{{ user.profile.avatar.url }}" alt="{{ user.profile.display_name }}" class="dash-avatar" />
+      {% else %}
+        <div class="dash-avatar-placeholder">{{ user.first_name.0|default:user.username.0|upper }}</div>
+      {% endif %}
+      <div>
+        <strong class="dash-username">{{ user.profile.display_name }}</strong>
+        <span class="dash-role badge badge--{{ user.profile.role }}">{{ user.profile.get_role_display }}</span>
+      </div>
+    </div>
+
+    <nav class="dash-nav">
+      <a href="{% url 'accounts:dashboard' %}" class="dash-nav-link active">
+        <i data-lucide="layout-dashboard"></i> Dashboard
+      </a>
+      <a href="{% url 'courses:list' %}" class="dash-nav-link">
+        <i data-lucide="book-open"></i> Browse Courses
+      </a>
+      <a href="{% url 'events:list' %}" class="dash-nav-link">
+        <i data-lucide="calendar"></i> Events
+      </a>
+      <a href="{% url 'accounts:profile' %}" class="dash-nav-link">
+        <i data-lucide="settings"></i> Profile & Settings
+      </a>
+      {% if user.profile.is_trainer %}
+      <a href="{% url 'accounts:trainer_dashboard' %}" class="dash-nav-link">
+        <i data-lucide="presentation"></i> Trainer Dashboard
+      </a>
+      {% endif %}
+      {% if user.is_staff %}
+      <a href="{% url 'accounts:admin_dashboard' %}" class="dash-nav-link">
+        <i data-lucide="shield"></i> Admin Panel
+      </a>
+      {% endif %}
+      <div class="dash-nav-divider"></div>
+      <a href="{% url 'accounts:logout' %}" class="dash-nav-link dash-nav-link--danger">
+        <i data-lucide="log-out"></i> Logout
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="dash-main">
+    <!-- Welcome Banner -->
+    <div class="dash-welcome">
+      <div class="dash-welcome__text">
+        <h1 class="dash-welcome__title">Welcome back, {{ user.first_name|default:user.username }}.</h1>
+        <p class="dash-welcome__sub">Keep building — you're on your way to something great.</p>
+      </div>
+      <div class="dash-welcome__circuit" aria-hidden="true">
+        <svg width="120" height="60" viewBox="0 0 120 60" fill="none">
+          <path d="M10 30 H50 V10 H110" stroke="#ffe483" stroke-width="1.5" opacity="0.4" stroke-dasharray="5 3" class="trace-animate"/>
+          <circle cx="50" cy="30" r="4" fill="#ffe483" opacity="0.7"/>
+          <circle cx="110" cy="10" r="5" fill="#ffe483" opacity="0.9" class="pulse-svg"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="dash-stats">
+      <div class="dash-stat-card">
+        <i data-lucide="book-open" class="dash-stat-icon"></i>
+        <div>
+          <span class="dash-stat-num">{{ enrollments.count }}</span>
+          <span class="dash-stat-label">Enrolled Courses</span>
+        </div>
+      </div>
+      <div class="dash-stat-card">
+        <i data-lucide="check-circle" class="dash-stat-icon"></i>
+        <div>
+          <span class="dash-stat-num">{{ enrollments|length }}</span>
+          <span class="dash-stat-label">In Progress</span>
+        </div>
+      </div>
+      <div class="dash-stat-card">
+        <i data-lucide="award" class="dash-stat-icon"></i>
+        <div>
+          <span class="dash-stat-num">{{ certificates.count }}</span>
+          <span class="dash-stat-label">Certificates</span>
+        </div>
+      </div>
+      <div class="dash-stat-card">
+        <i data-lucide="calendar" class="dash-stat-icon"></i>
+        <div>
+          <span class="dash-stat-num">{{ upcoming_registrations.count }}</span>
+          <span class="dash-stat-label">Upcoming Events</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    {% if notifications %}
+    <div class="dash-section">
+      <h2 class="dash-section-title"><i data-lucide="bell"></i> Notifications</h2>
+      <div class="notif-list">
+        {% for notif in notifications %}
+        <div class="notif-item notif-item--{{ notif.notification_type }}">
+          <div class="notif-icon">
+            <i data-lucide="{% if notif.notification_type == 'success' %}check-circle{% elif notif.notification_type == 'warning' %}alert-triangle{% else %}info{% endif %}"></i>
+          </div>
+          <div class="notif-body">
+            <strong class="notif-title">{{ notif.title }}</strong>
+            <p class="notif-msg">{{ notif.message }}</p>
+          </div>
+          <a href="{% url 'accounts:mark_notification_read' pk=notif.pk %}" class="notif-close" aria-label="Dismiss">
+            <i data-lucide="x"></i>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- My Courses -->
+    <div class="dash-section">
+      <div class="dash-section-header">
+        <h2 class="dash-section-title"><i data-lucide="book-open"></i> My Courses</h2>
+        <a href="{% url 'courses:list' %}" class="btn btn-ghost btn--sm">Browse More</a>
+      </div>
+
+      {% if enrollments %}
+      <div class="enrolled-courses">
+        {% for enrollment in enrollments %}
+        <div class="enrolled-card">
+          <div class="enrolled-card__img">
+            {% if enrollment.course.thumbnail %}
+              <img src="{{ enrollment.course.thumbnail.url }}" alt="{{ enrollment.course.title }}" />
+            {% else %}
+              <div class="enrolled-card__placeholder"><i data-lucide="book-open"></i></div>
+            {% endif %}
+          </div>
+          <div class="enrolled-card__body">
+            <span class="enrolled-card__cat">{{ enrollment.course.category.name|default:"Course" }}</span>
+            <h3 class="enrolled-card__title">{{ enrollment.course.title }}</h3>
+            <span class="enrolled-card__instructor">{{ enrollment.course.instructor.get_full_name|default:enrollment.course.instructor.username }}</span>
+            <div class="enrolled-progress">
+              <div class="progress-bar-wrap">
+                <div class="progress-bar" style="width:{{ enrollment.progress_percent }}%"></div>
+              </div>
+              <span class="progress-label">{{ enrollment.progress_percent }}%</span>
+            </div>
+          </div>
+          <a href="{% url 'courses:inner_dashboard' slug=enrollment.course.slug %}" class="btn btn-primary btn--sm enrolled-card__cta">
+            {% if enrollment.progress_percent == 100 %}
+              <i data-lucide="refresh-cw"></i> Review
+            {% else %}
+              <i data-lucide="play"></i> Continue
+            {% endif %}
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i data-lucide="book-open"></i>
+        <h3>No courses yet</h3>
+        <p><a href="{% url 'courses:list' %}">Explore courses</a> and start learning.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Upcoming Events -->
+    {% if upcoming_registrations %}
+    <div class="dash-section">
+      <h2 class="dash-section-title"><i data-lucide="calendar"></i> Upcoming Events</h2>
+      <div class="upcoming-events-list">
+        {% for reg in upcoming_registrations %}
+        <div class="event-list-item">
+          <div class="event-list-date">
+            <span class="event-date-day">{{ reg.event.date|date:"d" }}</span>
+            <span class="event-date-mon">{{ reg.event.date|date:"M" }}</span>
+          </div>
+          <div class="event-list-info">
+            <strong class="event-list-title">{{ reg.event.title }}</strong>
+            <span class="event-list-meta">
+              <i data-lucide="clock"></i> {{ reg.event.time|time:"g:i A" }} ·
+              <i data-lucide="map-pin"></i> {{ reg.event.location }}
+            </span>
+          </div>
+          <a href="{{ reg.event.get_absolute_url }}" class="btn btn-ghost btn--sm">View</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Certificates -->
+    {% if certificates %}
+    <div class="dash-section">
+      <h2 class="dash-section-title"><i data-lucide="award"></i> Certificates</h2>
+      <div class="certificates-grid">
+        {% for cert in certificates %}
+        <div class="cert-card">
+          <div class="cert-card__icon"><i data-lucide="award"></i></div>
+          <div class="cert-card__body">
+            <h4 class="cert-card__course">{{ cert.course.title }}</h4>
+            <span class="cert-card__date">Issued {{ cert.issued_at|date:"M d, Y" }}</span>
+          </div>
+          <a href="{{ cert.get_verify_url }}" class="btn btn-ghost btn--sm cert-card__btn">
+            <i data-lucide="external-link"></i> View
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
