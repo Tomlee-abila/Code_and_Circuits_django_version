@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Profile — Code & Circuits{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+  <aside class="dash-sidebar">
+    <div class="dash-user">
+      {% if user.profile.avatar %}
+        <img src="{{ user.profile.avatar.url }}" alt="{{ user.profile.display_name }}" class="dash-avatar" />
+      {% else %}
+        <div class="dash-avatar-placeholder">{{ user.first_name.0|default:user.username.0|upper }}</div>
+      {% endif %}
+      <div>
+        <strong class="dash-username">{{ user.profile.display_name }}</strong>
+        <span class="dash-role badge badge--{{ user.profile.role }}">{{ user.profile.get_role_display }}</span>
+      </div>
+    </div>
+    <nav class="dash-nav">
+      <a href="{% url 'accounts:dashboard' %}" class="dash-nav-link"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+      <a href="{% url 'accounts:profile' %}" class="dash-nav-link active"><i data-lucide="settings"></i> Profile & Settings</a>
+      <div class="dash-nav-divider"></div>
+      <a href="{% url 'accounts:logout' %}" class="dash-nav-link dash-nav-link--danger"><i data-lucide="log-out"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <div class="dash-main">
+    <div class="dash-welcome">
+      <h1 class="dash-welcome__title">Profile & Settings</h1>
+    </div>
+
+    <div class="form-card">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-section-title">Personal Information</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">First Name</label>
+            {{ form.first_name }}
+          </div>
+          <div class="form-field">
+            <label class="form-label">Last Name</label>
+            {{ form.last_name }}
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Email</label>
+          {{ form.email }}
+        </div>
+        <div class="form-field">
+          <label class="form-label">Bio</label>
+          <textarea name="bio" class="cc-input" rows="3" placeholder="Tell us about yourself…">{{ form.bio.value|default:"" }}</textarea>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Avatar</label>
+          {{ form.avatar }}
+        </div>
+
+        <div class="form-section-title" style="margin-top:2rem;">Contact & Social</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Phone</label>
+            {{ form.phone }}
+          </div>
+          <div class="form-field">
+            <label class="form-label">Location</label>
+            {{ form.location }}
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Website</label>
+          {{ form.website }}
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label"><i data-lucide="github"></i> GitHub</label>
+            {{ form.github }}
+          </div>
+          <div class="form-field">
+            <label class="form-label"><i data-lucide="linkedin"></i> LinkedIn</label>
+            {{ form.linkedin }}
+          </div>
+        </div>
+
+        <div class="form-actions" style="margin-top:2rem;">
+          <button type="submit" class="btn btn-primary btn--lg">
+            <i data-lucide="save"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
