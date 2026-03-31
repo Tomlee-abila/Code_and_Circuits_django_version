@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — Code & Circuits{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+  <aside class="dash-sidebar">
+    <div class="dash-user">
+      <div class="dash-avatar-placeholder" style="background:linear-gradient(135deg,#ffe483,#fdd400);">
+        {{ user.first_name.0|default:user.username.0|upper }}
+      </div>
+      <div>
+        <strong class="dash-username">{{ user.profile.display_name }}</strong>
+        <span class="dash-role badge" style="background:rgba(255,228,131,.15);color:#ffe483;">Admin</span>
+      </div>
+    </div>
+    <nav class="dash-nav">
+      <a href="{% url 'accounts:admin_dashboard' %}" class="dash-nav-link active"><i data-lucide="shield"></i> Admin Panel</a>
+      <a href="{% url 'accounts:dashboard' %}" class="dash-nav-link"><i data-lucide="layout-dashboard"></i> User Dashboard</a>
+      <a href="/admin/" class="dash-nav-link"><i data-lucide="settings-2"></i> Django Admin</a>
+      <div class="dash-nav-divider"></div>
+      <a href="{% url 'accounts:logout' %}" class="dash-nav-link dash-nav-link--danger"><i data-lucide="log-out"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <div class="dash-main">
+    <div class="dash-welcome">
+      <h1 class="dash-welcome__title">System Overview</h1>
+      <p class="dash-welcome__sub">Platform-wide metrics and management.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="dash-stats dash-stats--4">
+      <div class="dash-stat-card dash-stat-card--accent">
+        <i data-lucide="users" class="dash-stat-icon"></i>
+        <div>
+          <span class="dash-stat-num">{{ total_users }}</span>
+          <span class="dash-stat-label">Total Users</span>
+        </div>
+      </div>
+      <div class="dash-stat-card">
+        <i data-lucide="book-open" class="dash-stat-icon"></i>
+        <div>
+          <span class="dash-stat-num">{{ total_courses }}</span>
+          <span class="dash-stat-label">Total Courses</span>
+        </div>
+      </div>
+      <div class="dash-stat-card">
+        <i data-lucide="trending-up" class="dash-stat-icon"></i>
+        <div>
+          <span class="dash-stat-num">{{ total_enrollments }}</span>
+          <span class="dash-stat-label">Enrollments</span>
+        </div>
+      </div>
+      <div class="dash-stat-card">
+        <i data-lucide="calendar" class="dash-stat-icon"></i>
+        <div>
+          <span class="dash-stat-num">{{ total_events }}</span>
+          <span class="dash-stat-label">Events</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-two-col">
+      <!-- Recent Users -->
+      <div class="dash-section">
+        <h2 class="dash-section-title"><i data-lucide="user-plus"></i> Recent Users</h2>
+        <div class="admin-list">
+          {% for u in recent_users %}
+          <div class="admin-list-item">
+            <div class="admin-avatar">{{ u.first_name.0|default:u.username.0|upper }}</div>
+            <div class="admin-item-info">
+              <strong>{{ u.get_full_name|default:u.username }}</strong>
+              <span>{{ u.email }}</span>
+            </div>
+            <span class="admin-item-date">{{ u.date_joined|date:"M d" }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Recent Courses -->
+      <div class="dash-section">
+        <h2 class="dash-section-title"><i data-lucide="book-plus"></i> Recent Courses</h2>
+        <div class="admin-list">
+          {% for course in recent_courses %}
+          <div class="admin-list-item">
+            <div class="admin-course-icon"><i data-lucide="book-open"></i></div>
+            <div class="admin-item-info">
+              <strong>{{ course.title|truncatechars:30 }}</strong>
+              <span>{{ course.instructor.get_full_name|default:course.instructor.username }}</span>
+            </div>
+            <span class="badge {% if course.is_published %}badge--success{% else %}badge--warning{% endif %}">
+              {% if course.is_published %}Live{% else %}Draft{% endif %}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <h2 class="dash-section-title"><i data-lucide="settings-2"></i> Quick Actions</h2>
+      <div class="admin-actions-grid">
+        <a href="/admin/auth/user/" class="admin-action-btn">
+          <i data-lucide="users"></i>
+          <span>Manage Users</span>
+        </a>
+        <a href="/admin/courses/course/" class="admin-action-btn">
+          <i data-lucide="book-open"></i>
+          <span>Manage Courses</span>
+        </a>
+        <a href="/admin/events/event/" class="admin-action-btn">
+          <i data-lucide="calendar"></i>
+          <span>Manage Events</span>
+        </a>
+        <a href="/admin/" class="admin-action-btn admin-action-btn--accent">
+          <i data-lucide="settings-2"></i>
+          <span>Django Admin</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
